@@ -3,3 +3,5 @@ frontend/dist/
 
 backend/node_modules/
 backend/dist/
+
+stopped_timestamp.txt
