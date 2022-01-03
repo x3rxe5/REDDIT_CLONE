@@ -9,11 +9,8 @@ import { PostResolver } from "./resolvers/post";
 import { UserResolver } from './resolvers/user';
 import { createClient } from "redis";
 import session from "express-session";
-import morgan from "morgan";
 import { __prod__ } from './constant';
 import { MyContext } from './types';
-
-
 
 
 
@@ -26,9 +23,8 @@ const main = async () => {
 
   // redis client and store
   let RedisStore = require("connect-redis")(session);
-  let redisClient = createClient({
-    url:"redis://127.0.0.1:6379"
-  });
+  let redisClient = createClient();
+  await redisClient.connect();
   
   // console.log("this is redisClient ->",redisClient);
 
@@ -42,10 +38,11 @@ const main = async () => {
       secure:__prod__,
       sameSite:'lax'
     },
+    saveUninitialized:false,
     secret:'keyboard cat',
     resave:false
   }));
-  app.use(morgan("dev"));
+  
 
 
 

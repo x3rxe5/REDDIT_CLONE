@@ -1,6 +1,6 @@
 import { __prod__ } from "./constant";
 import { Post } from "./entities/Post";
-import { User } from "./entities/User";
+import { Users } from "./entities/Users";
 import { MikroORM } from "@mikro-orm/core";
 import path from "path";
 
@@ -9,7 +9,7 @@ export default {
     path:path.join(__dirname,"./migrations"),
     pattern:/^[\w-]+\d+\.[tj]s$/,
   },
-  entities:[Post,User],
+  entities:[Post,Users],
   user:"xerxes",
   password:"3911",
   dbName:"lireddit",

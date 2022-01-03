@@ -1,4 +1,4 @@
-import { User } from "../entities/User";
+import { Users } from "../entities/Users";
 import { MyContext } from "src/types";
 import { Arg, Ctx, Field, InputType, Mutation, ObjectType, Resolver } from "type-graphql";
 import argon2 from "argon2";
@@ -31,8 +31,8 @@ class UserResponse{
   @Field(() => [FieldError], { nullable:true })
   errors?:  FieldError[];
 
-  @Field(() => User,{nullable:true})
-  user?: User;
+  @Field(() => Users,{nullable:true})
+  user?: Users;
 
 }
 
@@ -72,7 +72,7 @@ export class UserResolver{
 
     const hashedPassword = await argon2.hash(options.password);
     
-    const user = await em.create(User,{
+    const user = await em.create(Users,{
       username:options.username,
       email:options.email,
       password:hashedPassword
@@ -103,12 +103,12 @@ export class UserResolver{
   @Mutation(() => UserResponse)
   async login(
     @Arg("options") option:UsernameAndPasswordInput,
-    @Ctx() {em}:MyContext
+    @Ctx() {em,req}:MyContext
   ):Promise<UserResponse>{
 
     try{
 
-      const user = await em.findOne(User,{ username:option.username })
+      const user = await em.findOne(Users,{ username:option.username })
 
       if(!user){        
         return errorMessageResponse("Username/Password","Username/Password does not exists");
@@ -119,6 +119,8 @@ export class UserResolver{
       if(!valid){
         return errorMessageResponse("Username/Password","Username/Password does not exists");
       }
+
+      req.session!.userId = user.id;
 
       return {
         user

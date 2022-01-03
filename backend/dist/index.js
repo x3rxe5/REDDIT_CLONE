@@ -14,16 +14,14 @@ const post_1 = require("./resolvers/post");
 const user_1 = require("./resolvers/user");
 const redis_1 = require("redis");
 const express_session_1 = __importDefault(require("express-session"));
-const morgan_1 = __importDefault(require("morgan"));
 const constant_1 = require("./constant");
 const main = async () => {
     const orm = await core_1.MikroORM.init(mikro_orm_config_1.default);
     await orm.getMigrator().up();
     const app = (0, express_1.default)();
     let RedisStore = require("connect-redis")(express_session_1.default);
-    let redisClient = (0, redis_1.createClient)({
-        url: "redis://127.0.0.1:6379"
-    });
+    let redisClient = (0, redis_1.createClient)();
+    await redisClient.connect();
     app.use((0, express_session_1.default)({
         name: "qid",
         store: new RedisStore({ client: redisClient }),
@@ -33,10 +31,10 @@ const main = async () => {
             secure: constant_1.__prod__,
             sameSite: 'lax'
         },
+        saveUninitialized: false,
         secret: 'keyboard cat',
         resave: false
     }));
-    app.use((0, morgan_1.default)("dev"));
     const apolloServer = new apollo_server_express_1.ApolloServer({
         schema: await (0, type_graphql_1.buildSchema)({
             resolvers: [
