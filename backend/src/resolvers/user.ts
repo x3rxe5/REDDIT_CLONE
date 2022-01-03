@@ -36,53 +36,98 @@ class UserResponse{
 
 }
 
+/*
+* errorMessageResponse(@param1,@param2):UserResponse {error field return}
+*/
+
+const errorMessageResponse = (_f:string,_m:string):UserResponse => {
+  return {
+    errors:[{
+      field:_f,
+      message:_m
+    }]
+  }
+}
+
+// Main() resolver here
+
 @Resolver()
 export class UserResolver{
 
-  @Mutation(() => User)
+  // Register Method
+  @Mutation(() => UserResponse)
   async register(
     @Arg("options") options:UsernameAndPasswordInput,
     @Ctx() {em}:MyContext
-  ):Promise<User>{
+  ):Promise<UserResponse>{
+
+  
+    if(options.username.length <= 5){
+      return errorMessageResponse("Username length","Username Length Must be greater than 5");
+    }
+
+    if(options.password.length < 6 && options.password.length > 50){
+      return errorMessageResponse("Password","Password length must be greater than 6 and less than 50");
+    }
 
     const hashedPassword = await argon2.hash(options.password);
+    
     const user = await em.create(User,{
       username:options.username,
       email:options.email,
       password:hashedPassword
     });
-    await em.persistAndFlush(user);
-    return user;
+    
+    try{
+      await em.persistAndFlush(user);
+    }catch(e:any){
+
+      if(e.code === "23505" || e.details.includes("already exists")){
+        return errorMessageResponse(
+          "Username",
+          "Username already taken"
+        )
+      }
+
+      return errorMessageResponse("error",e.message);
+
+    }   
+
+    return {
+      user
+    };
 
   }
 
+  // Login method
   @Mutation(() => UserResponse)
   async login(
     @Arg("options") option:UsernameAndPasswordInput,
     @Ctx() {em}:MyContext
   ):Promise<UserResponse>{
 
-    const user = await em.findOne(User,{ username:option.username })
-    if(!user){
-      return{
-        errors:[{
-          field:"username",
-          message:"Username does not exists"
-        }]
+    try{
+
+      const user = await em.findOne(User,{ username:option.username })
+
+      if(!user){        
+        return errorMessageResponse("Username/Password","Username/Password does not exists");
       }
-    }
-    const valid = await argon2.verify(user.password,option.password);
-    if(!valid){
-      return{
-        errors:[{
-          field:"password",
-          message:"Password does not match"
-        }]
+
+      const valid = await argon2.verify(user.password,option.password);
+
+      if(!valid){
+        return errorMessageResponse("Username/Password","Username/Password does not exists");
       }
+
+      return {
+        user
+      };
+      
+    }catch(error:any){
+      return errorMessageResponse("error",error.message);
     }
 
-    return {
-      user
-    };
   }
+
 }
