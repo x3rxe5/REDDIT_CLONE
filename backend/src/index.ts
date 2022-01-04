@@ -23,7 +23,9 @@ const main = async () => {
 
   // redis client and store
   let RedisStore = require("connect-redis")(session);
-  let redisClient = createClient();
+  let redisClient = createClient({
+    legacyMode: true
+  });
   await redisClient.connect();
   
   // console.log("this is redisClient ->",redisClient);
@@ -60,7 +62,10 @@ const main = async () => {
   });
 
   await apolloServer.start();
-  apolloServer.applyMiddleware({app});
+  apolloServer.applyMiddleware({
+    app,
+    cors: { credentials: true, origin: "https://studio.apollographql.com" },
+  });
 
 
   app.listen(4000, () => {

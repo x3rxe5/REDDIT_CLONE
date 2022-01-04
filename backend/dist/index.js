@@ -20,7 +20,9 @@ const main = async () => {
     await orm.getMigrator().up();
     const app = (0, express_1.default)();
     let RedisStore = require("connect-redis")(express_session_1.default);
-    let redisClient = (0, redis_1.createClient)();
+    let redisClient = (0, redis_1.createClient)({
+        legacyMode: true
+    });
     await redisClient.connect();
     app.use((0, express_session_1.default)({
         name: "qid",
@@ -47,7 +49,10 @@ const main = async () => {
         context: ({ req, res }) => ({ em: orm.em, req, res })
     });
     await apolloServer.start();
-    apolloServer.applyMiddleware({ app });
+    apolloServer.applyMiddleware({
+        app,
+        cors: { credentials: true, origin: "https://studio.apollographql.com" },
+    });
     app.listen(4000, () => {
         console.log("App is Listening on Port 4000");
     });

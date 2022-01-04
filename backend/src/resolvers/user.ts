@@ -80,7 +80,7 @@ export class UserResolver{
     
     try{
       await em.persistAndFlush(user);
-    }catch(e:any){
+    }catch(e){
 
       if(e.code === "23505" || e.details.includes("already exists")){
         return errorMessageResponse(
@@ -126,7 +126,7 @@ export class UserResolver{
         user
       };
       
-    }catch(error:any){
+    }catch(error){
       return errorMessageResponse("error",error.message);
     }
 
