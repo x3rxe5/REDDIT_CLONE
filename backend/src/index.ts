@@ -13,6 +13,12 @@ import { __prod__ } from './constant';
 import { MyContext } from './types';
 
 
+// global module configuration
+// declare module 'express-session' {
+//   interface SessionData {
+//     userId: Users;
+//   }
+// }
 
 const main = async () => {
   const orm = await MikroORM.init(microConfig);
@@ -23,17 +29,22 @@ const main = async () => {
 
   // redis client and store
   let RedisStore = require("connect-redis")(session);
-  let redisClient = createClient({
+  let redisClient = createClient({ 
     legacyMode: true
   });
   await redisClient.connect();
+
+  // Proxy for Cookie settings
+  app.set('trust proxy', true);
   
   // console.log("this is redisClient ->",redisClient);
-
   // Express middleware setting
   app.use(session({
     name:"qid",
-    store: new RedisStore({ client: redisClient }),
+    store: new RedisStore({ 
+      client: redisClient,
+      disableTouch:true 
+    }),
     cookie:{
       maxAge: 1000 * 60 * 60 *24 * 365 * 10, // 10 years
       httpOnly:true,
@@ -59,9 +70,14 @@ const main = async () => {
 
   await apolloServer.start();
 
+  const corsOptions = {
+    origin: "https://studio.apollographql.com" ,
+    credentials: true
+  }
+
   apolloServer.applyMiddleware({
     app,
-    cors: { credentials: true, origin: "https://studio.apollographql.com" },
+     cors: corsOptions,
   });
 
   app.listen(4000, () => {
@@ -69,5 +85,7 @@ const main = async () => {
   })
 }
 
-main();
+main().catch(err => {
+  console.log("Error Occured -> ",err);
+});
 

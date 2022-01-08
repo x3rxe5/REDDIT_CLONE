@@ -24,9 +24,13 @@ const main = async () => {
         legacyMode: true
     });
     await redisClient.connect();
+    app.set('trust proxy', true);
     app.use((0, express_session_1.default)({
         name: "qid",
-        store: new RedisStore({ client: redisClient }),
+        store: new RedisStore({
+            client: redisClient,
+            disableTouch: true
+        }),
         cookie: {
             maxAge: 1000 * 60 * 60 * 24 * 365 * 10,
             httpOnly: true,
@@ -49,13 +53,19 @@ const main = async () => {
         context: ({ req, res }) => ({ em: orm.em, req, res })
     });
     await apolloServer.start();
+    const corsOptions = {
+        origin: "https://studio.apollographql.com",
+        credentials: true
+    };
     apolloServer.applyMiddleware({
         app,
-        cors: { credentials: true, origin: "https://studio.apollographql.com" },
+        cors: corsOptions,
     });
     app.listen(4000, () => {
         console.log("App is Listening on Port 4000");
     });
 };
-main();
+main().catch(err => {
+    console.log("Error Occured -> ", err);
+});
 //# sourceMappingURL=index.js.map

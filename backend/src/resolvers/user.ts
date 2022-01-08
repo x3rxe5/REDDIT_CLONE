@@ -58,11 +58,11 @@ export class UserResolver{
   async me(
     @Ctx() {req,em}:MyContext
   ){
-    console.log('This is req session and userid => ',req.session?.userId);
-    if(req?.session?.userId){
+    console.log('This is req session and userid => ', req.session.userId);
+    if(!req.session.userId){
       return null;
     }
-    const user = await em.findOne(Users, { id:req.session?.userId});
+    const user = await em.findOne(Users, { id: req.session.userId});
     return user;
   }
 
@@ -134,8 +134,8 @@ export class UserResolver{
         return errorMessageResponse("Username/Password","Username/Password does not exists");
       }
 
-      req.session!.userId = user.id;
-
+      req.session.userId = user.id;
+      
       return {
         user
       };
