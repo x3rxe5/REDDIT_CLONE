@@ -33,9 +33,9 @@ const main = async () => {
   // Express middleware setting
   app.use(session({
     name:"qid",
-    store: new RedisStore({ client: redisClient }), //{ client:redisClient }
+    store: new RedisStore({ client: redisClient }),
     cookie:{
-      maxAge:1000 * 60 * 60 *24 * 365 * 10, // 10 years
+      maxAge: 1000 * 60 * 60 *24 * 365 * 10, // 10 years
       httpOnly:true,
       secure:__prod__,
       sameSite:'lax'
@@ -45,10 +45,6 @@ const main = async () => {
     resave:false
   }));
   
-
-
-
-
   const apolloServer = new ApolloServer({
     schema: await buildSchema({
       resolvers:[
@@ -62,11 +58,11 @@ const main = async () => {
   });
 
   await apolloServer.start();
+
   apolloServer.applyMiddleware({
     app,
     cors: { credentials: true, origin: "https://studio.apollographql.com" },
   });
-
 
   app.listen(4000, () => {
     console.log("App is Listening on Port 4000");

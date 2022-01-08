@@ -1,6 +1,6 @@
 import { Users } from "../entities/Users";
 import { MyContext } from "src/types";
-import { Arg, Ctx, Field, InputType, Mutation, ObjectType, Resolver } from "type-graphql";
+import { Arg, Ctx, Field, InputType, Mutation, ObjectType, Query, Resolver } from "type-graphql";
 import argon2 from "argon2";
 
 @InputType()
@@ -53,6 +53,20 @@ const errorMessageResponse = (_f:string,_m:string):UserResponse => {
 
 @Resolver()
 export class UserResolver{
+
+  @Query(() => Users, { nullable:true })
+  async me(
+    @Ctx() {req,em}:MyContext
+  ){
+    console.log('This is req session and userid => ',req.session?.userId);
+    if(req?.session?.userId){
+      return null;
+    }
+    const user = await em.findOne(Users, { id:req.session?.userId});
+    return user;
+  }
+
+
 
   // Register Method
   @Mutation(() => UserResponse)
