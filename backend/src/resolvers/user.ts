@@ -72,7 +72,7 @@ export class UserResolver{
   @Mutation(() => UserResponse)
   async register(
     @Arg("options") options:UsernameAndPasswordInput,
-    @Ctx() {em}:MyContext
+    @Ctx() { em,req }:MyContext
   ):Promise<UserResponse>{
 
   
@@ -104,8 +104,10 @@ export class UserResolver{
       }
 
       return errorMessageResponse("error",e.message);
-
     }   
+    
+    // Cookie Enabled 
+    req.session.userId = user.id;
 
     return {
       user
