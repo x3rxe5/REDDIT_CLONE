@@ -15,10 +15,11 @@ export const InputField:React.FC<InputFieldProps> = ({
   size:_,
   ...props
 }) => {
-  const [field,{ error }] = useField(props);
+  const [field,meta] = useField(props);
+  console.log("This is error from InputField Props -> ",meta);
   return(
     <>
-      <FormControl isInvalid={!!error}>
+      <FormControl isInvalid={!!meta.error}>
         <FormLabel htmlFor={field.name}>{label}</FormLabel>
         <Input 
           {...field} 
@@ -26,7 +27,7 @@ export const InputField:React.FC<InputFieldProps> = ({
           id={field.name} 
           placeholder={props.placeholder} 
         />
-        {error ? <FormErrorMessage>{error}</FormErrorMessage> : null }
+        {meta.error ? <FormErrorMessage>{meta.error}</FormErrorMessage> : null }
       </FormControl>
     </>
   );
