@@ -2,6 +2,8 @@ import { Users } from "../entities/Users";
 import { MyContext } from "src/types";
 import { Arg, Ctx, Field, InputType, Mutation, ObjectType, Query, Resolver } from "type-graphql";
 import argon2 from "argon2";
+import * as EmailValidator from "email-validator";
+// import { EntityManager } from "@mikro-orm/postgresql";
 
 @InputType()
 class UsernameAndPasswordInput{
@@ -77,11 +79,18 @@ export class UserResolver{
 
   
     if(options.username.length <= 5){
-      return errorMessageResponse("Username length","Username Length Must be greater than 5");
+      return errorMessageResponse("username","Username Length Must be greater than 5");
     }
 
     if(options.password.length < 6 && options.password.length > 50){
-      return errorMessageResponse("Password","Password length must be greater than 6 and less than 50");
+      return errorMessageResponse("password","Password length must be greater than 6 and less than 50");
+    }
+
+    if(options.email){
+      const checker:boolean = EmailValidator.validate(options.email);
+      if(!checker){
+        return errorMessageResponse("email","not valid email address");
+      }
     }
 
     const hashedPassword = await argon2.hash(options.password);
@@ -91,11 +100,21 @@ export class UserResolver{
       email:options.email,
       password:hashedPassword
     });
+
+    
     
     try{
+      // const result = await  (em as EntityManager).createQueryBuilder(Users).getKnexQuery().insert({
+      //   username:options.username,
+      //   email:options.email,
+      //   password:hashedPassword,
+      //   updated_at:new Date(),
+      //   created_at:new Date()
+      // }).returning("*")
+      
       await em.persistAndFlush(user);
     }catch(e){
-
+      console.log(e);
       if(e.code === "23505" || e.details.includes("already exists")){
         return errorMessageResponse(
           "Username",

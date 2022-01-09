@@ -15,6 +15,7 @@ const user_1 = require("./resolvers/user");
 const redis_1 = require("redis");
 const express_session_1 = __importDefault(require("express-session"));
 const constant_1 = require("./constant");
+const cors_1 = __importDefault(require("cors"));
 const main = async () => {
     const orm = await core_1.MikroORM.init(mikro_orm_config_1.default);
     await orm.getMigrator().up();
@@ -25,6 +26,13 @@ const main = async () => {
     });
     await redisClient.connect();
     app.set('trust proxy', true);
+    app.use((0, cors_1.default)({
+        origin: [
+            "http://localhost:3000",
+            "https://studio.apollographql.com"
+        ],
+        credentials: true,
+    }));
     app.use((0, express_session_1.default)({
         name: "qid",
         store: new RedisStore({
@@ -53,13 +61,9 @@ const main = async () => {
         context: ({ req, res }) => ({ em: orm.em, req, res })
     });
     await apolloServer.start();
-    const corsOptions = {
-        origin: "https://studio.apollographql.com",
-        credentials: true
-    };
     apolloServer.applyMiddleware({
         app,
-        cors: corsOptions,
+        cors: false
     });
     app.listen(4000, () => {
         console.log("App is Listening on Port 4000");

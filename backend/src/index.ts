@@ -11,6 +11,7 @@ import { createClient } from "redis";
 import session from "express-session";
 import { __prod__ } from './constant';
 import { MyContext } from './types';
+import cors from "cors";
 
 
 // global module configuration
@@ -36,9 +37,19 @@ const main = async () => {
 
   // Proxy for Cookie settings
   app.set('trust proxy', true);
-  
+  // cors settings
+
+  app.use(cors({
+    origin:[
+      "http://localhost:3000",
+      "https://studio.apollographql.com"
+    ],
+    credentials:true,
+  }))
+
   // console.log("this is redisClient ->",redisClient);
   // Express middleware setting
+  
   app.use(session({
     name:"qid",
     store: new RedisStore({ 
@@ -70,14 +81,14 @@ const main = async () => {
 
   await apolloServer.start();
 
-  const corsOptions = {
-    origin: "https://studio.apollographql.com" ,
-    credentials: true
-  }
+  // const corsOptions = {
+  //   origin: "http://localhost:3000" ,
+  //   credentials: true
+  // }
 
   apolloServer.applyMiddleware({
     app,
-     cors: corsOptions,
+    cors:false
   });
 
   app.listen(4000, () => {
