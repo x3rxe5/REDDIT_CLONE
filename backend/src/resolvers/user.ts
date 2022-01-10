@@ -146,13 +146,13 @@ export class UserResolver{
       const user = await em.findOne(Users,{ username:option.username })
 
       if(!user){        
-        return errorMessageResponse("Username/Password","Username/Password does not exists");
+        return errorMessageResponse("username","user does not exists");
       }
 
       const valid = await argon2.verify(user.password,option.password);
 
       if(!valid){
-        return errorMessageResponse("Username/Password","Username/Password does not exists");
+        return errorMessageResponse("password","password does not match");
       }
 
       req.session.userId = user.id;

@@ -98,6 +98,13 @@ export type Users = {
   username: Scalars['String'];
 };
 
+export type LoginMutationVariables = Exact<{
+  options: UsernameAndPasswordInput;
+}>;
+
+
+export type LoginMutation = { __typename?: 'Mutation', login: { __typename?: 'UserResponse', errors?: Array<{ __typename?: 'FieldError', field: string, message: string }> | null | undefined, user?: { __typename?: 'Users', id: number, email: string, username: string } | null | undefined } };
+
 export type RegisterMutationVariables = Exact<{
   username: Scalars['String'];
   email: Scalars['String'];
@@ -112,7 +119,31 @@ export type HelloQueryVariables = Exact<{ [key: string]: never; }>;
 
 export type HelloQuery = { __typename?: 'Query', hello: string };
 
+export type MeQueryVariables = Exact<{ [key: string]: never; }>;
 
+
+export type MeQuery = { __typename?: 'Query', me?: { __typename?: 'Users', id: number, username: string, email: string } | null | undefined };
+
+
+export const LoginDocument = gql`
+    mutation Login($options: UsernameAndPasswordInput!) {
+  login(options: $options) {
+    errors {
+      field
+      message
+    }
+    user {
+      id
+      email
+      username
+    }
+  }
+}
+    `;
+
+export function useLoginMutation() {
+  return Urql.useMutation<LoginMutation, LoginMutationVariables>(LoginDocument);
+};
 export const RegisterDocument = gql`
     mutation Register($username: String!, $email: String!, $password: String!) {
   register(options: {username: $username, email: $email, password: $password}) {
@@ -140,4 +171,17 @@ export const HelloDocument = gql`
 
 export function useHelloQuery(options: Omit<Urql.UseQueryArgs<HelloQueryVariables>, 'query'> = {}) {
   return Urql.useQuery<HelloQuery>({ query: HelloDocument, ...options });
+};
+export const MeDocument = gql`
+    query Me {
+  me {
+    id
+    username
+    email
+  }
+}
+    `;
+
+export function useMeQuery(options: Omit<Urql.UseQueryArgs<MeQueryVariables>, 'query'> = {}) {
+  return Urql.useQuery<MeQuery>({ query: MeDocument, ...options });
 };
