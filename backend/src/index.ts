@@ -9,7 +9,7 @@ import { PostResolver } from "./resolvers/post";
 import { UserResolver } from './resolvers/user';
 import { createClient } from "redis";
 import session from "express-session";
-import { __prod__ } from './constant';
+import { COOKIE_NAME, __prod__ } from './constant';
 import { MyContext } from './types';
 import cors from "cors";
 
@@ -51,7 +51,7 @@ const main = async () => {
   // Express middleware setting
   
   app.use(session({
-    name:"qid",
+    name:COOKIE_NAME,
     store: new RedisStore({ 
       client: redisClient,
       disableTouch:true 

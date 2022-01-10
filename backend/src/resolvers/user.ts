@@ -167,4 +167,33 @@ export class UserResolver{
 
   }
 
+  // Logout mutation 
+  @Mutation(() => Boolean)
+  logout(
+    @Ctx() {req,res}:MyContext
+  ){
+    // let flag:boolean=true;
+    // const response = await req.session.destroy((err) => {
+    //   if(err){
+    //     console.log(err);
+    //     flag=false;
+    //   }
+    // })
+    // if(response){
+    //   res.clearCookie("qid");
+    // }
+    // return flag;
+
+    return new Promise((resp) => 
+      req.session.destroy((err) => {
+        res.clearCookie("qid",{ path:"/"});
+        if(err){        
+          console.log(err);
+          resp(false);
+          return;
+        }
+        resp(true);
+    }));
+  }
+
 }

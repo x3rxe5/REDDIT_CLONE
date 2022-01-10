@@ -1,7 +1,7 @@
 import { ChakraProvider, ColorModeProvider } from '@chakra-ui/react'
 import { Cache, cacheExchange, query, QueryInput } from '@urql/exchange-graphcache';
 import { Provider,createClient, dedupExchange, fetchExchange } from 'urql'
-import { LoginMutation, MeDocument, MeQuery, RegisterMutation } from '../generated/graphql';
+import { LoginMutation, LogoutMutation, MeDocument, MeQuery, RegisterMutation } from '../generated/graphql';
 import theme from '../theme';
 
 function betterUpdateQuery<Result,Query> (
@@ -53,6 +53,15 @@ const client = createClient({
               }
             }
           );
+        },
+
+        logout:(_result,args,cache,info) => {
+          betterUpdateQuery<LogoutMutation,MeQuery>(
+            cache,
+            {query:MeDocument},
+            _result,
+            () => ({ me:null })
+          )
         }
         
       }
