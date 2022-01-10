@@ -15,8 +15,7 @@ export const InputField:React.FC<InputFieldProps> = ({
   size:_,
   ...props
 }) => {
-  const [field,meta] = useField(props);
-  console.log("This is error from InputField Props -> ",meta);
+  const [field,meta] = useField(props);  
   return(
     <>
       <FormControl isInvalid={!!meta.error}>
