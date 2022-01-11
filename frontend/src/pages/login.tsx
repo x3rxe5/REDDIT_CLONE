@@ -26,11 +26,11 @@ const login:React.FC<loginProps> = ({}) => {
         <Formik 
           initialValues={{ username:"", password:"" }}
           onSubmit={ async (values,{ setErrors }) => {            
-            const response = await login ({ options:values});   
+            const response = await login ({ usernameOrEmail:values.username,password:values.password });
             console.log("This is response -> ",response);
             if(response.data.login.errors){            
               setErrors(toErrorMap(response.data.login.errors));
-            }else if(response.data.login.user){
+            }else if(response.data.login.user){              
               router.push("/");
             }
           }}
@@ -39,8 +39,8 @@ const login:React.FC<loginProps> = ({}) => {
             <Form>
               <InputField 
                 name="username"
-                placeholder="username"
-                label="Username"    
+                placeholder="username or email"
+                label="Username/email"
               />                      
               <Box mt={4}>
                 <InputField 

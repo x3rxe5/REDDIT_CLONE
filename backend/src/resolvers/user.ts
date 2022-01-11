@@ -3,6 +3,10 @@ import { MyContext } from "src/types";
 import { Arg, Ctx, Field, InputType, Mutation, ObjectType, Query, Resolver } from "type-graphql";
 import argon2 from "argon2";
 import * as EmailValidator from "email-validator";
+import { sendEmail } from "./../utils/sendEmail";
+import { v4 } from "uuid";
+import { COOKIE_NAME, FORGOT_PASSWORD_PREFIX } from "./../constant";
+
 // import { EntityManager } from "@mikro-orm/postgresql";
 
 @InputType()
@@ -55,6 +59,33 @@ const errorMessageResponse = (_f:string,_m:string):UserResponse => {
 
 @Resolver()
 export class UserResolver{
+
+  @Mutation(() =>  Boolean)
+  async forgotPassword(
+    @Arg("email") email:string,
+    @Ctx() { em, redis } : MyContext
+  ){
+    const person = await em.findOne(Users,{email:email});
+    if(!person){
+      return false;
+    }
+
+    const token:string= v4();
+
+    await redis.set(
+      FORGOT_PASSWORD_PREFIX+token,
+      person.id,
+      'ex',
+      1000 * 60 * 60 * 24 * 3
+    ); // 3 days
+
+    const html:string = `
+      <a href="http://localhost:3000/change-password/${token}">Reset Password</a>
+    `
+
+    await sendEmail(email,html);
+    return true;
+  }
 
   @Query(() => Users, { nullable:true })
   async me(
@@ -137,19 +168,26 @@ export class UserResolver{
   // Login method
   @Mutation(() => UserResponse)
   async login(
-    @Arg("options") option:UsernameAndPasswordInput,
+    @Arg("usernameOrEmail") usernameOrEmail:string,
+    @Arg("password") password:string,
     @Ctx() {em,req}:MyContext
   ):Promise<UserResponse>{
 
     try{
-
-      const user = await em.findOne(Users,{ username:option.username })
-
-      if(!user){        
-        return errorMessageResponse("username","user does not exists");
+      let user:Users | null; 
+      const checker:boolean = EmailValidator.validate(usernameOrEmail);
+      if(checker){
+        user = await em.findOne(Users,{email:usernameOrEmail});
+      }else{
+        user = await em.findOne(Users,{ username:usernameOrEmail });
       }
 
-      const valid = await argon2.verify(user.password,option.password);
+
+      if(!user){        
+        return errorMessageResponse("username","user/email does not exists");
+      }
+
+      const valid = await argon2.verify(user.password,password);
 
       if(!valid){
         return errorMessageResponse("password","password does not match");
@@ -172,21 +210,10 @@ export class UserResolver{
   logout(
     @Ctx() {req,res}:MyContext
   ){
-    // let flag:boolean=true;
-    // const response = await req.session.destroy((err) => {
-    //   if(err){
-    //     console.log(err);
-    //     flag=false;
-    //   }
-    // })
-    // if(response){
-    //   res.clearCookie("qid");
-    // }
-    // return flag;
 
     return new Promise((resp) => 
       req.session.destroy((err) => {
-        res.clearCookie("qid",{ path:"/"});
+        res.clearCookie(COOKIE_NAME,{ path:"/"});
         if(err){        
           console.log(err);
           resp(false);

@@ -34,12 +34,15 @@ $ yarn watch && yarn dev
 <h4> Database </h4>
 
 <h6> database:Postgresql </h6>
+
 ```bash
 $ yarn create:migration
 ```
 
 
 <h4> Both </h4>
+
+
 ```bash
 $ yarn fire #or
 $ npm fire
