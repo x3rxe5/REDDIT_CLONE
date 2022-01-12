@@ -7,11 +7,13 @@ import { buildSchema }  from "type-graphql";
 import { HelloResolver } from "./resolvers/hello";
 import { PostResolver } from "./resolvers/post";
 import { UserResolver } from './resolvers/user';
-import { createClient } from "redis";
+// import { createClient } from "ioredis";
+import Redis from "ioredis";
 import session from "express-session";
 import { COOKIE_NAME, __prod__ } from './constant';
 import { MyContext } from './types';
 import cors from "cors";
+
 
 
 // global module configuration
@@ -22,6 +24,7 @@ import cors from "cors";
 // }
 
 const main = async () => {
+
   const orm = await MikroORM.init(microConfig);
   await orm.getMigrator().up();
 
@@ -30,10 +33,8 @@ const main = async () => {
 
   // redis client and store
   let RedisStore = require("connect-redis")(session);
-  let redisClient = createClient({ 
-    legacyMode: true
-  });
-  await redisClient.connect();
+  let redis = new Redis(/*{ legacyMode: true}*/);
+  //await redis.connect();
 
   // Proxy for Cookie settings
   app.set('trust proxy', true);
@@ -47,13 +48,12 @@ const main = async () => {
     credentials:true,
   }))
 
-  // console.log("this is redisClient ->",redisClient);
-  // Express middleware setting
+
   
   app.use(session({
     name:COOKIE_NAME,
     store: new RedisStore({ 
-      client: redisClient,
+      client: redis,
       disableTouch:true 
     }),
     cookie:{
@@ -76,7 +76,7 @@ const main = async () => {
       ],
       validate:false,
     }),
-    context:({req,res}):MyContext => ({ em: orm.em ,req ,res })
+    context:({req,res}):MyContext => ({ em: orm.em ,req ,res,redis })
   });
 
   await apolloServer.start();
