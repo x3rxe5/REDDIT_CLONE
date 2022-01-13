@@ -36,6 +36,7 @@
     "argon2": "^0.28.3",
     "connect-redis": "^6.0.0",
     "cors": "^2.8.5",
+    "dotenv": "^11.0.0",
     "email-validator": "^2.0.4",
     "express": "4.17.1",
     "express-session": "^1.17.2",
@@ -47,6 +48,7 @@
     "redis": "^4.0.1",
     "reflect-metadata": "^0.1.13",
     "type-graphql": "^1.1.1",
+    "typeorm": "^0.2.41",
     "uuid": "^8.3.2"
   },
   "mikro-orm": {

@@ -1,6 +1,4 @@
 import 'reflect-metadata';
-import { MikroORM } from "@mikro-orm/core";
-import microConfig from "./mikro-orm.config"
 import express from "express";
 import { ApolloServer } from "apollo-server-express";
 import { buildSchema }  from "type-graphql";
@@ -13,9 +11,15 @@ import session from "express-session";
 import { COOKIE_NAME, __prod__ } from './constant';
 import { MyContext } from './types';
 import cors from "cors";
+import { createConnection } from "typeorm";
+import dotenv from "dotenv";
+import { Users } from './entities/Users';
+import { Post } from './entities/Post';
 
 
 
+// environment variables
+dotenv.config({path:"./src/config.env"});
 // global module configuration
 // declare module 'express-session' {
 //   interface SessionData {
@@ -24,9 +28,23 @@ import cors from "cors";
 // }
 
 const main = async () => {
+  
+  // typeorm configuration
 
-  const orm = await MikroORM.init(microConfig);
-  await orm.getMigrator().up();
+  await createConnection({
+    type:"postgres",
+    database:process.env.DATABASE_NAME,
+    username:process.env.DATABASE_USERNAME,
+    password:process.env.DATABASE_PASSWORD,
+    logging:true,
+    synchronize:true,
+    entities:[
+      Post,
+      Users
+    ]
+  });
+
+  
 
   // Express server configuration
   const app = express();
@@ -76,22 +94,17 @@ const main = async () => {
       ],
       validate:false,
     }),
-    context:({req,res}):MyContext => ({ em: orm.em ,req ,res,redis })
+    context:({req,res}):MyContext => ({ req ,res,redis })
   });
 
   await apolloServer.start();
-
-  // const corsOptions = {
-  //   origin: "http://localhost:3000" ,
-  //   credentials: true
-  // }
 
   apolloServer.applyMiddleware({
     app,
     cors:false
   });
 
-  app.listen(4000, () => {
+  app.listen(process.env.PORT, () => {
     console.log("App is Listening on Port 4000");
   })
 }
