@@ -12,7 +12,11 @@ interface indexProps{}
 
 const index:React.FC<indexProps> = () => {
 
-  const [{data}] = usePostsQuery();
+  const [{data}] = usePostsQuery({
+    variables:{
+      limit:10
+    }
+  });
 
   return(
     <Layout>

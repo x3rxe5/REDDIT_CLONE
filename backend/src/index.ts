@@ -15,6 +15,7 @@ import { createConnection } from "typeorm";
 import dotenv from "dotenv";
 import { Users } from './entities/Users';
 import { Post } from './entities/Post';
+import path from 'path';
 
 
 
@@ -31,18 +32,21 @@ const main = async () => {
   
   // typeorm configuration
 
-  await createConnection({
+  const conn = await createConnection({
     type:"postgres",
     database:process.env.DATABASE_NAME,
     username:process.env.DATABASE_USERNAME,
     password:process.env.DATABASE_PASSWORD,
     logging:true,
     synchronize:true,
+    migrations:[path.join(__dirname,"./migrations/*")],
     entities:[
       Post,
       Users
     ]
   });
+
+  conn.runMigrations();
 
   
 
