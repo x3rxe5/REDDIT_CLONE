@@ -3,5 +3,6 @@ frontend/node_modules/
 backend/node_modules/
 backend/dist/
 backend/src/config.env
+backend/misc/
 
 stopped_timestamp.txt
