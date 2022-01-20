@@ -21,7 +21,7 @@ const Post_1 = require("./entities/Post");
 const path_1 = __importDefault(require("path"));
 dotenv_1.default.config({ path: "./src/config.env" });
 const main = async () => {
-    const conn = await typeorm_1.createConnection({
+    await (0, typeorm_1.createConnection)({
         type: "postgres",
         database: process.env.DATABASE_NAME,
         username: process.env.DATABASE_USERNAME,
@@ -34,19 +34,18 @@ const main = async () => {
             Users_1.Users
         ]
     });
-    conn.runMigrations();
-    const app = express_1.default();
+    const app = (0, express_1.default)();
     let RedisStore = require("connect-redis")(express_session_1.default);
     let redis = new ioredis_1.default();
     app.set('trust proxy', true);
-    app.use(cors_1.default({
+    app.use((0, cors_1.default)({
         origin: [
             "http://localhost:3000",
             "https://studio.apollographql.com"
         ],
         credentials: true,
     }));
-    app.use(express_session_1.default({
+    app.use((0, express_session_1.default)({
         name: constant_1.COOKIE_NAME,
         store: new RedisStore({
             client: redis,
@@ -63,7 +62,7 @@ const main = async () => {
         resave: false
     }));
     const apolloServer = new apollo_server_express_1.ApolloServer({
-        schema: await type_graphql_1.buildSchema({
+        schema: await (0, type_graphql_1.buildSchema)({
             resolvers: [
                 hello_1.HelloResolver,
                 post_1.PostResolver,

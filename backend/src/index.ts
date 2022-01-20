@@ -32,7 +32,8 @@ const main = async () => {
   
   // typeorm configuration
 
-  const conn = await createConnection({
+  /*const conn =*/ 
+  await createConnection({
     type:"postgres",
     database:process.env.DATABASE_NAME,
     username:process.env.DATABASE_USERNAME,
@@ -46,7 +47,7 @@ const main = async () => {
     ]
   });
 
-  conn.runMigrations();
+  // conn.runMigrations();
 
   
 
