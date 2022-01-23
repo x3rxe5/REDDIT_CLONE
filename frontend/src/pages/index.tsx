@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { withUrqlClient } from "next-urql";
 import createUrqlClient  from "../utils/createUrqlClient";
 import { usePostsQuery } from "../generated/graphql";
@@ -11,11 +11,13 @@ interface indexProps{}
 
 
 const index:React.FC<indexProps> = () => {
+  const [variables,setVariable] = useState({
+    limit:33,
+    cursor:null as null | string
+  });
 
   const [{data,fetching}] = usePostsQuery({
-    variables:{
-      limit:10
-    }
+    variables
   });
 
   return(
@@ -30,7 +32,7 @@ const index:React.FC<indexProps> = () => {
       {fetching && !data 
         ? <div> Loading ... </div>   
         : <Stack spacing={8}>
-          { data.posts.map(el => {    
+          { data.posts.posts.map(el => {    
             return (
               <>
                 <Box key={el.id} p={5} shadow="md" borderWidth={1} mb={3}>
@@ -42,10 +44,15 @@ const index:React.FC<indexProps> = () => {
           })}
         </Stack>
       }
-      { data 
-        ? <Flex align="center" mt={4}>
-            <Button isLoading={fetching} m="auto" my={8} padding={4}>Load more</Button>
-          </Flex>
+      { data && data.posts.hasMore
+        ? (<Flex align="center" mt={4}>
+            <Button onClick={() => {
+              setVariable({
+                limit:variables.limit,
+                cursor:data.posts.posts[data.posts.posts.length - 1].createdAt
+              })
+            }} isLoading={fetching} m="auto" my={8} padding={4}>Load more</Button>
+          </Flex>)
         : null
       }
     </Layout>
