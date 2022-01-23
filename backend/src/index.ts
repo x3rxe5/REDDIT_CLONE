@@ -47,7 +47,9 @@ const main = async () => {
     ]
   });
 
+  // for creating migrations 
   // conn.runMigrations();
+  // await Post.delete({});
 
   
 

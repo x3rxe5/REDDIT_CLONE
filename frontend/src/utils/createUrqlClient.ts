@@ -6,6 +6,7 @@ import { pipe,tap } from "wonka";
 import { Exchange } from "urql";
 import Router from "next/router";
 
+// error Exchange -> 
 const errorExchange:Exchange = ({forward}) => ops$ => {  
   return pipe(
     forward(ops$),
@@ -17,49 +18,63 @@ const errorExchange:Exchange = ({forward}) => ops$ => {
   )
 }
 
-
+// Cursor Pagination
 const cursorPagination = (): Resolver => {
   return (_parent, fieldArgs, cache, info) => {
-    const { parentKey: entityKey, fieldName } = info;
-    const allFields = cache.inspectFields(entityKey);
+    const { parentKey: entityKey, fieldName } = info;    
+    const allFields = cache.inspectFields(entityKey);      
     const fieldInfos = allFields.filter((info) => info.fieldName === fieldName);
     const size = fieldInfos.length;
     if (size === 0) {
       return undefined;
     }
 
-    const fieldKey = `${fieldName}(${stringifyVariables(fieldArgs)})`;
-    const isItInTheCache = cache.resolve(
-      cache.resolveFieldByKey(entityKey, fieldKey) as string,
+    //info partial
+
+    const isItInCache = cache.resolve(
+      cache.resolve(entityKey,fieldName,fieldArgs) as string,
       "posts"
     );
-    info.partial = !isItInTheCache;
+    
+    info.partial = !isItInCache;
+    
     let hasMore = true;
-    const results: string[] = [];
-    fieldInfos.forEach((fi) => {
-      const key = cache.resolveFieldByKey(entityKey, fi.fieldKey) as string;
-      const data = cache.resolve(key, "posts") as string[];
-      const _hasMore = cache.resolve(key, "hasMore");
-      if (!_hasMore) {
+    const results:string[] = [];
+    fieldInfos.forEach((fi) => {      
+      const key = cache.resolve(entityKey,fi.fieldName,fi.arguments) as string;
+      const data = cache.resolve(key,"posts") as string[];
+      const _hasMore = cache.resolve(key,"hasMore");
+      console.log("This is hasMore -> ",hasMore);
+      if(!_hasMore){
         hasMore = _hasMore as boolean;
       }
       results.push(...data);
-    });
+    })
 
+    // final and return the results;
     return {
-      __typename: "PaginatedPosts",
+      __typename:"PaginatedPosts",
       hasMore,
-      posts: results,
+      posts:results
     };
-  };
+  }
 };
 
+// URQL Client
 const createUrqlClient = (ssrExchange:any) => ({
   url:"http://localhost:4000/graphql",
   fetchOptions:{
     credentials:"include" as const,
   },
   exchanges:[dedupExchange,cacheExchange({
+    keys:{
+      PaginatedPosts: () => null
+    },
+    resolvers:{
+      Query:{
+        posts:cursorPagination(),
+      }
+    },
     updates:{
       Mutation:{
         login:(_result,args,cache,info) => {
