@@ -3,6 +3,7 @@ import { MyContext } from "./../types";
 import { Arg, Ctx, Field, FieldResolver, InputType, Int, Mutation, ObjectType, Query, Resolver, Root, UseMiddleware } from "type-graphql";
 import { Post } from "../entities/Post";
 import { getConnection } from "typeorm";
+import { Updoot } from "./../entities/Updoot";
 
 @InputType()
 class PostInput{
@@ -41,18 +42,41 @@ export class PostResolver{
 
     const realLimit = Math.min(50,limit);
     const addLimit = realLimit + 1;
-    const qb = await getConnection().getRepository(Post)
-      .createQueryBuilder("p")      
-      .orderBy('"createdAt"',"DESC")
-      .take(addLimit)      
+
+    const replacements:any[] = [addLimit];
 
     if(cursor){
-      qb.where('"createdAt" > :cursor ',{
-        cursor:new Date(parseInt(cursor))
-      });
+      replacements.push(new Date(parseInt(cursor)));
     }
+    console.log("Replacements -> ",replacements);
 
-    const posts = await qb.getMany();
+    const posts = await getConnection().query(`
+      select p.*,
+      json_build_object(
+        'id',u.id,
+        'username',u.username,
+        'email',u.email
+      ) creator
+      from post p
+      inner join users u on u.id = p."creatorId"
+      ${cursor ? `where p."createdAt" < $2` : ""}  
+      order by p."createdAt" DESC
+      limit $1
+    `,replacements);
+
+    // const qb = await getConnection().getRepository(Post)
+    //   .createQueryBuilder("p")
+    //   .innerJoinAndSelect("p.creator","u",'u.id = p."creatorId"')
+    //   .orderBy('p."createdAt"',"DESC")
+    //   .take(addLimit)      
+
+    // if(cursor){
+    //   qb.where('p."createdAt" > :cursor ',{
+    //     cursor:new Date(parseInt(cursor))
+    //   });
+    // }
+
+    // const posts = await qb.getMany();
 
     return {
       posts:posts.slice(0,realLimit),
@@ -114,5 +138,39 @@ export class PostResolver{
 
   }
 
+  @Mutation(() => Boolean)
+  @UseMiddleware(isAuth)
+  async vote(
+    @Arg("postId",()=> Int) postId:number,
+    @Arg("value",()=> Int) value:number,
+    @Ctx() {req}:MyContext
+  ){
+    const isUpdoot = value !== -1
+    const realValue =isUpdoot ? 1 : -1
+    const { userId } = req.session;
+
+    await Updoot.insert({
+      userId,
+      postId,
+      value:realValue
+    });
+
+    const sqlQuery:string =`
+
+      START TRANSACTION;
+  
+      insert into updoot("userId","postId",value)
+      values(${userId},${postId},${value})
+
+      update post
+      set points = points + ${realValue}
+      where id = ${postId};
+
+      COMMIT;
+
+    `
+    await getConnection().query(sqlQuery)
+    return true;
+  }
 
 }

@@ -16,6 +16,7 @@ import dotenv from "dotenv";
 import { Users } from './entities/Users';
 import { Post } from './entities/Post';
 import path from 'path';
+import { Updoot } from './entities/Updoot';
 
 
 
@@ -43,7 +44,8 @@ const main = async () => {
     migrations:[path.join(__dirname,"./migrations/*")],
     entities:[
       Post,
-      Users
+      Users,
+      Updoot
     ]
   });
 
