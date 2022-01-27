@@ -1,6 +1,6 @@
 import { Users } from "../entities/Users";
 import { MyContext } from "src/types";
-import { Arg, Ctx, Field, InputType, Mutation, ObjectType, Query, Resolver } from "type-graphql";
+import { Arg, Ctx, Field, FieldResolver, InputType, Mutation, ObjectType, Query, Resolver, Root } from "type-graphql";
 import argon2 from "argon2";
 import * as EmailValidator from "email-validator";
 import { sendEmail } from "./../utils/sendEmail";
@@ -59,8 +59,18 @@ const errorMessageResponse = (_f:string,_m:string):UserResponse => {
 
 // Main() resolver here
 
-@Resolver()
+@Resolver(Users)
 export class UserResolver{
+  @FieldResolver(() =>  String)
+  email(@Root() user:Users,@Ctx() {req}:MyContext){
+    // its ok to see current users email
+    if(req.session.userId === user.id){
+      return user.email;
+    }
+    // current user wants to see someone else email
+    return "";
+  }
+
 
   @Mutation(() =>  Boolean)
   async forgotPassword(

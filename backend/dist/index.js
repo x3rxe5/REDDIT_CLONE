@@ -19,6 +19,7 @@ const dotenv_1 = __importDefault(require("dotenv"));
 const Users_1 = require("./entities/Users");
 const Post_1 = require("./entities/Post");
 const path_1 = __importDefault(require("path"));
+const Updoot_1 = require("./entities/Updoot");
 dotenv_1.default.config({ path: "./src/config.env" });
 const main = async () => {
     await (0, typeorm_1.createConnection)({
@@ -31,7 +32,8 @@ const main = async () => {
         migrations: [path_1.default.join(__dirname, "./migrations/*")],
         entities: [
             Post_1.Post,
-            Users_1.Users
+            Users_1.Users,
+            Updoot_1.Updoot
         ]
     });
     const app = (0, express_1.default)();
