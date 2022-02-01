@@ -44,7 +44,7 @@ const cursorPagination = (): Resolver => {
       const key = cache.resolve(entityKey,fi.fieldName,fi.arguments) as string;
       const data = cache.resolve(key,"posts") as string[];
       const _hasMore = cache.resolve(key,"hasMore");
-      console.log("This is hasMore -> ",hasMore);
+
       if(!_hasMore){
         hasMore = _hasMore as boolean;
       }
@@ -77,6 +77,13 @@ const createUrqlClient = (ssrExchange:any) => ({
     },
     updates:{
       Mutation:{
+        createPost: (_result,args,cache,info) => {
+          const allFields = cache.inspectFields("Query");
+          const fieldInfos = allFields.filter((info) => info.fieldName === "posts")
+          fieldInfos.forEach((fi) => {
+            cache.invalidate("Query","posts",fi.arguments || {});
+          })
+        },
         login:(_result,args,cache,info) => {
           betterUpdateQuery<LoginMutation,MeQuery>(
             cache,

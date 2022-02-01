@@ -5,6 +5,7 @@ import { usePostsQuery } from "../generated/graphql";
 import { Layout } from "../components/Layout";
 import { Box, Button, Flex, Heading, Link, Stack, Text } from "@chakra-ui/react";
 import NextLink from "next/link";
+import { ChevronDownIcon, ChevronUpIcon, Icon } from "@chakra-ui/icons";
 
 interface indexProps{}
 
@@ -12,14 +13,14 @@ interface indexProps{}
 
 const index:React.FC<indexProps> = () => {
   const [variables,setVariable] = useState({
-    limit:33,
+    limit:15,
     cursor:null as null | string
   });
 
   const [{data,fetching}] = usePostsQuery({
     variables
   });
-
+  
   return(
     <Layout>
       <Flex mb={4}>
@@ -35,10 +36,24 @@ const index:React.FC<indexProps> = () => {
           { data.posts.posts.map(el => {    
             return (
               <>
-                <Box key={el.id} p={5} shadow="md" borderWidth={1} mb={3}>
-                  <Heading fontSize="xl">{el.title}</Heading>
-                  <Text mt={2}>{el.textSnippet}</Text> 
-                </Box>
+                <Flex key={el.id} p={5} shadow="md" borderWidth={1} mb={3}>
+                  <Box mr={3}>
+                    <Box>
+                      <ChevronUpIcon w={6} h={6} />
+                    </Box>
+                    <Box ml={2}>
+                      {el.points}
+                    </Box>
+                    <Box>
+                      <ChevronDownIcon w={6} h={6} />
+                    </Box>
+                  </Box>
+                  <Box>
+                    <Heading fontSize="xl">{el.title}</Heading>
+                    <Text> By {el.creator.username}</Text>
+                    <Text mt={2}>{el.textSnippet}</Text> 
+                  </Box>
+                </Flex>
               </>
             )
           })}
