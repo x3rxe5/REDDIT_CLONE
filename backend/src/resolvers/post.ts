@@ -1,9 +1,8 @@
+import { Arg, Ctx, Field, FieldResolver, InputType, Int, Mutation, ObjectType, Query, Resolver, Root, UseMiddleware } from "type-graphql";
+import { getConnection } from "typeorm";
+import { Post } from "../entities/Post";
 import { isAuth } from "./../middleware/isAuth";
 import { MyContext } from "./../types";
-import { Arg, Ctx, Field, FieldResolver, InputType, Int, Mutation, ObjectType, Query, Resolver, Root, UseMiddleware } from "type-graphql";
-import { Post } from "../entities/Post";
-import { getConnection } from "typeorm";
-import { Updoot } from "./../entities/Updoot";
 
 @InputType()
 class PostInput{
@@ -145,32 +144,32 @@ export class PostResolver{
     @Arg("value",()=> Int) value:number,
     @Ctx() {req}:MyContext
   ){
-    const isUpdoot = value !== -1
-    const realValue =isUpdoot ? 1 : -1
-    const { userId } = req.session;
-
-    await Updoot.insert({
-      userId,
-      postId,
-      value:realValue
-    });
-
-    const sqlQuery:string =`
-
-      START TRANSACTION;
+    try{
+      const isUpdoot = value !== -1
+      const realValue =isUpdoot ? 1 : -1
+      const { userId } = req.session;
   
-      insert into updoot("userId","postId",value)
-      values(${userId},${postId},${value})
-
-      update post
-      set points = points + ${realValue}
-      where id = ${postId};
-
-      COMMIT;
-
-    `
-    await getConnection().query(sqlQuery)
-    return true;
+      const sqlQuery:string =`
+  
+        START TRANSACTION;
+    
+        insert into updoot("userId","postId",value)
+        values(${userId},${postId},${value});
+  
+        UPDATE post
+        SET points = points + ${realValue}
+        WHERE id = ${postId};
+  
+        COMMIT;
+  
+      `
+      await getConnection().query(sqlQuery)
+      return true;
+    }catch(err){
+      // throw new Error(err);
+      return false;
+    }
   }
+
 
 }

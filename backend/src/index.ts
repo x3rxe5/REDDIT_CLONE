@@ -22,12 +22,6 @@ import { Updoot } from './entities/Updoot';
 
 // environment variables
 dotenv.config({path:"./src/config.env"});
-// global module configuration
-// declare module 'express-session' {
-//   interface SessionData {
-//     userId: Users;
-//   }
-// }
 
 const main = async () => {
   

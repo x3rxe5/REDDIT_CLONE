@@ -1,31 +1,29 @@
-import { BaseEntity, Column, Entity, ManyToOne, PrimaryColumn } from "typeorm";
-import { Field, ObjectType } from "type-graphql";
-import { Users } from "./Users";
+import { Entity, BaseEntity, ManyToOne, PrimaryColumn, Column } from "typeorm";
 import { Post } from "./Post";
+import { Users } from "./Users";
 
-@ObjectType()
+// m to n
+// many to many
+// user <-> posts
+// user -> join table <- posts
+// user -> updoot <- posts
+
 @Entity()
-export class Updoot extends BaseEntity{
+export class Updoot extends BaseEntity {
+  @Column({ type: "int" })
+  value: number;
 
-
-  @Column({ type:"int" })
-  value:number
-
-  // Relations
-
-  @ManyToOne(() => Users,users => users.updoots)
-  users:Users;
-
-  @Field()
-  @PrimaryColumn() 
+  @PrimaryColumn()
   userId: number;
 
-  @Field(() => Post)
-  @ManyToOne(() => Post,post => post.updoots)
-  post:Post;
+  @ManyToOne(() => Users, (user) => user.updoots)
+  user: Users;
 
-  @Field()
   @PrimaryColumn()
   postId: number;
 
+  @ManyToOne(() => Post, (post) => post.updoots, {
+    onDelete: "CASCADE",
+  })
+  post: Post;
 }
