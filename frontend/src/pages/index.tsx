@@ -1,11 +1,12 @@
-import React, { useState } from "react";
-import { withUrqlClient } from "next-urql";
-import createUrqlClient  from "../utils/createUrqlClient";
-import { usePostsQuery } from "../generated/graphql";
-import { Layout } from "../components/Layout";
 import { Box, Button, Flex, Heading, Link, Stack, Text } from "@chakra-ui/react";
+import { withUrqlClient } from "next-urql";
 import NextLink from "next/link";
-import { ChevronDownIcon, ChevronUpIcon, Icon } from "@chakra-ui/icons";
+import React, { useState } from "react";
+import { Layout } from "../components/Layout";
+import UpdootSection from "../components/UpdootSection";
+import { usePostsQuery } from "../generated/graphql";
+import createUrqlClient from "../utils/createUrqlClient";
+
 
 interface indexProps{}
 
@@ -37,17 +38,7 @@ const index:React.FC<indexProps> = () => {
             return (
               <>
                 <Flex key={el.id} p={5} shadow="md" borderWidth={1} mb={3}>
-                  <Box mr={3}>
-                    <Box>
-                      <ChevronUpIcon w={6} h={6} />
-                    </Box>
-                    <Box ml={2}>
-                      {el.points}
-                    </Box>
-                    <Box>
-                      <ChevronDownIcon w={6} h={6} />
-                    </Box>
-                  </Box>
+                  <UpdootSection post={el}/>
                   <Box>
                     <Heading fontSize="xl">{el.title}</Heading>
                     <Text> By {el.creator.username}</Text>
