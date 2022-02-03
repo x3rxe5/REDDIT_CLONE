@@ -43,7 +43,7 @@ export class PostResolver{
 
     const realLimit = Math.min(50,limit);
     const addLimit = realLimit + 1;
-    const { userId } = req.session;
+    
 
     const replacements:any[] = [addLimit];
 
