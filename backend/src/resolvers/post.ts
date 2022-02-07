@@ -33,7 +33,6 @@ export class PostResolver{
   ){
     return root.text.slice(0,50);
   }
-
   @Query(() => PaginatedPosts)  
   async posts(
     @Arg("limit",() => Int) limit:number,
@@ -160,7 +159,7 @@ export class PostResolver{
     const isUpdoot = value !== -1;
     const realValue = isUpdoot ? 1 : -1;
     const { userId } = req.session;
-
+    console.log("This is req Object -> ",req);
     const updoot = await Updoot.findOne({ where: { postId, userId } });
 
     // the user has voted on the post before

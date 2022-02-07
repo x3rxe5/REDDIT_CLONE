@@ -8,6 +8,7 @@ interface UpdootSectionProps {
 
 const UpdootSection:React.FC<UpdootSectionProps> = ({ post }) => {
   const [,vote] = useVoteMutation();
+  {console.log("This is vote Status ",post.voteStatus)}
   return (
       <>
           <Flex
@@ -18,7 +19,8 @@ const UpdootSection:React.FC<UpdootSectionProps> = ({ post }) => {
           >
               <IconButton
                   aria-label="upvote"
-                  icon={<ChevronUpIcon w={6} h={6} />}
+                  icon={<ChevronUpIcon w={6} h={6} color={ post.voteStatus === 1 ? "white" : "black" } />}
+                  background={post.voteStatus === 1 ? "green.300" : undefined }
                   onClick={
                     () => {
                       console.log("Its clicking");
@@ -32,7 +34,8 @@ const UpdootSection:React.FC<UpdootSectionProps> = ({ post }) => {
               <Box m={2}>{post.points}</Box>
               <IconButton
                   aria-label="downvote"
-                  icon={<ChevronDownIcon w={6} h={6} />}
+                  icon={<ChevronDownIcon w={6} h={6} color={ post.voteStatus === 1 ? "white" : "black"} />}
+                  background={post.voteStatus === 1 ? "red.300" : undefined}
                   onClick={
                     () => {
                       vote({
