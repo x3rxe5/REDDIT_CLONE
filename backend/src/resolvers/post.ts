@@ -46,49 +46,38 @@ export class PostResolver{
 
     const replacements:any[] = [addLimit];
 
+    if(userId){
+      replacements.push(userId);
+    }
+
+    let cursorIdx:string | number = 3;
+
     if(cursor){
       replacements.push(new Date(parseInt(cursor)));
+      cursorIdx = replacements.length;
     }    
-    console.log("This is req.session -> ", req);
-    // const posts = await getConnection().query(
-    //   `
-    // select p.*
-    // from post p
-    // ${cursor ? `where p."createdAt" < $2` : ""}
-    // order by p."createdAt" DESC
-    // limit $1
-    // `,
-    //   replacements
-    // );
-
+    
+    
     const posts = await getConnection().query(`
       select p.*,
       json_build_object(
         'id',u.id,
         'username',u.username,
         'email',u.email
-      ) creator
+      ) creator,
+        ${
+          userId 
+          ? '(select value from updoot where "userId" = $2 and "postId" = p.id) "voteStatus" '
+          : 'null as "voteStatus"'
+        }
       from post p
       inner join users u on u.id = p."creatorId"
-      ${cursor ? `where p."createdAt" < $3` : ""}  
+      ${cursor ? `where p."createdAt" < $${cursorIdx}` : ""}  
       order by p."createdAt" DESC
       limit $1
     `,replacements);
 
-    // const qb = await getConnection().getRepository(Post)
-    //   .createQueryBuilder("p")
-    //   .innerJoinAndSelect("p.creator","u",'u.id = p."creatorId"')
-    //   .orderBy('p."createdAt"',"DESC")
-    //   .take(addLimit)      
-
-    // if(cursor){
-    //   qb.where('p."createdAt" > :cursor ',{
-    //     cursor:new Date(parseInt(cursor))
-    //   });
-    // }
-
-    // const posts = await qb.getMany();
-
+ 
     return {
       posts:posts.slice(0,realLimit),
       hasMore:posts.length === addLimit
