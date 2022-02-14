@@ -25,10 +25,7 @@ const index:React.FC<indexProps> = () => {
   return(
     <Layout>
       <Flex mb={4}>
-      <Heading>BiReddit</Heading>
-      <NextLink href="/create-post">
-        <Link ml="auto">Create Post</Link>
-      </NextLink>
+      <Heading>BiReddit</Heading>      
       </Flex>
       <br />
       {fetching && !data 
@@ -40,7 +37,11 @@ const index:React.FC<indexProps> = () => {
                 <Flex key={el.id} p={5} shadow="md" borderWidth={1} mb={3}>
                   <UpdootSection post={el}/>
                   <Box>
-                    <Heading fontSize="xl">{el.title}</Heading>
+                    <NextLink href="post/[id]" as={`/post/${el.id}`}>
+                      <Link>
+                        <Heading fontSize="xl">{el.title}</Heading>
+                      </Link>
+                    </NextLink>
                     <Text> By {el.creator.username}</Text>
                     <Text mt={2}>{el.textSnippet}</Text> 
                   </Box>

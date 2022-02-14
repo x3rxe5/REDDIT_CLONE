@@ -1,12 +1,16 @@
-import { Box,Link,Flex, Button } from "@chakra-ui/react"
+import { Box,Link,Flex, Button, Heading } from "@chakra-ui/react"
 import NextLink from "next/link";
+import { useRouter } from "next/router";
 import { useLogoutMutation, useMeQuery } from "../generated/graphql";
 import { isServer } from "../utils/isServer";
+
 
 interface NavbarProps{}
 
 
 export const NavBar:React.FC<NavbarProps> = ({}) => {
+  const router = useRouter();
+  console.log("This is path => ",router.pathname);
   const [{fetching:logoutFetching},logout] = useLogoutMutation();
   const [{data,fetching}] = useMeQuery({
     pause:isServer(),
@@ -40,7 +44,13 @@ export const NavBar:React.FC<NavbarProps> = ({}) => {
   }else{
     body = (
       <>
-        <Flex>
+        <Flex align="center">
+          <NextLink href="/create-post">
+            {/* <Link mr={2}>Create Post</Link> */}
+            <Button mr={4}>
+              Create Post
+            </Button>
+          </NextLink>
           <Box mr={2}>
             {data.me.username}
           </Box>
@@ -59,10 +69,21 @@ export const NavBar:React.FC<NavbarProps> = ({}) => {
 
   return(
     <>
-      <Flex bg="tan" p={4}>
-        <Box ml={'auto'}>
-          {body}
-        </Box>
+      <Flex bg="tan" p={4} >
+        <Flex align="center" maxW={800} flex={1} m="auto">
+          <NextLink href="/"> 
+            <Link>
+              { 
+                router.pathname !== "/" 
+                ? <Heading color="whiteAlpha.800">BiReddit</Heading> 
+                : <Heading color="whiteAlpha.800">The Hutch</Heading>
+              }            
+            </Link>
+          </NextLink>
+          <Box ml={'auto'}>
+            {body}
+          </Box>
+        </Flex>
       </Flex>
     </>
   )
